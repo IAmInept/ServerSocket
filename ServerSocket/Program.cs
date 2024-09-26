@@ -2,8 +2,9 @@
 using System.Text;
 using System.Net.Sockets;
 using System.Text.Encodings;
+using System.IO;
 
-    namespace ServerSocket
+namespace ServerSocket
 {
     class Program
     {
@@ -15,12 +16,12 @@ using System.Text.Encodings;
             // Setting Variables
             Client.TCPPort = 33333;
             Client.IPV4Address = "127.0.0.1";
+            Byte[] bytes = new byte[256];
+            string data = null;
 
-            // Need to Move these to Methods in Class
             TcpListener webServer = new TcpListener(Client.IPV4AddrBytes, Client.TCPPort);
 
             // Starting TCPListener for IPV4 Address (127.0.0.1) on port 33333
-            // Try 
             try
             {
                 // Begins TcpListener
@@ -34,8 +35,31 @@ using System.Text.Encodings;
                         // Returns True/False)
                     if (webServer.Pending())
                     {
-                        webServer.AcceptTcpClient();
+                        using TcpClient client = webServer.AcceptTcpClient();
                         Console.WriteLine("Connected!");
+
+                        data = null;
+                        NetworkStream netStream = client.GetStream();
+                        
+                        int i;
+
+                        // Loop to receive all the data sent by the client.
+                        // Shamelessly stolen from Microsoft
+                        while ((i = netStream.Read(bytes, 0, bytes.Length)) != 0)
+                        {
+                            // Translate data bytes to a ASCII string.
+                            data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
+                            Console.WriteLine("Received: {0}", data);
+
+                            // Process the data sent by the client.
+                            data = data.ToUpper();
+
+                            byte[] msg = System.Text.Encoding.ASCII.GetBytes(data);
+
+                            // Send back a response.
+                            netStream.Write(msg, 0, msg.Length);
+                            Console.WriteLine("Sent: {0}", data);
+                        }
                         break;
                     }
                 }
