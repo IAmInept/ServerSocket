@@ -10,7 +10,7 @@ using System.Text.Encodings;
 
 namespace ServerSocket
 {
-    public class TCPSocket()
+    public class ServerData()
     {
         public int TCPPort { get; set; }
         public string IPV4Address { get; set; }
